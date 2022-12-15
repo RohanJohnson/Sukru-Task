@@ -2,62 +2,75 @@
 require "includes/init.php";
 require "includes/database.php";
 
-
-$conn = getDB();
-
+$user;
+$pass;
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-$sql = "SELECT username FROM user ORDER BY id";
+    $conn = getDB();
+    $user = $_POST['username'];
+    $pass = $_POST['password'];
+    //connect to db
 
-$results = mysqli_query($conn, $sql);
+    if ($user != null && $pass != null) {
+        //     $pass = password_hash($pass, PASSWORD_DEFAULT);
+        $query = mysqli_query($conn, "SELECT * FROM user WHERE username='$user'");
 
-if ($results === false) {
-    echo mysqli_error($conn);
-} else {
-    $users = mysqli_fetch_all($results, MYSQLI_ASSOC);
+        $numrows = mysqli_num_rows($query);
+
+        if ($numrows != 0) {
+            //while loop
+            while ($row = mysqli_fetch_assoc($query)) {
+                $dbusername = $row['username'];
+                $dbpassword = $row['password'];
+
+                // var_dump($user);
+                // var_dump($pass);
+                // var_dump($dbusername);
+                // var_dump($dbpassword);
+                if ($user == $dbusername && password_verify($pass, $dbpassword)) {
+                    session_regenerate_id(true);
+                    echo "yer";
+
+                    $_SESSION['is_logged_in'] = true;
+
+                    Url::redirect('/SukruChallenge');
+
+                } else {
+                    $error = "login incorrect";
+                }
+            }
+        }
+    }
 }
 
-foreach($users as $user){
-    
-if ($_POST['username'] == $user['username'] && password_hash($_POST['password'], PASSWORD_DEFAULT) == $user['password'])
-{
 
-session_regenerate_id(true);
-
-$_SESSION['is_logged_in'] = true;
-
-Url::redirect('/SukruChallenge');
-
-} else {
-$error = "login incorrect";
-}
-}
-}
 ?>
 
 <?php require 'header.php'; ?>
 <h2>Login</h2>
-<?php if (! empty($error)) : ?>
+<?php if (!empty($error)): ?>
 
-<p><?= $error ?></p>
+<p>
+    <?= $error ?>
+</p>
 
 <?php endif; ?>
 <form method="post">
-<div>
+    <div>
 
-<label for="username">Username</label>
+        <label for="username">Username</label>
 
-<input name="username" id="username">
+        <input name="username" id="username">
 
-</div>
-<div>
+    </div>
+    <div>
 
-<label for="password">Password</label>
+        <label for="password">Password</label>
 
-<input type="password" name="password" id="password">
+        <input type="password" name="password" id="password">
 
-</div>
-<button>Log in</button>
+    </div>
+    <button>Log in</button>
 </form>
 
 <?php require "footer.php"; ?>
