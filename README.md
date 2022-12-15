@@ -18,8 +18,8 @@ make GET from user table and compare busername/email and hashed password
 ## Non functional
 
 ### Security
-
+-hash passwords -- industry standard encryption
+-password strength requirements
 
 ### Style
-
-#### test
+-dark AND light mode
